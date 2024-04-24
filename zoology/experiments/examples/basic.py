@@ -5,6 +5,7 @@ from zoology.config import TrainConfig, ModelConfig, DataConfig, FunctionConfig,
 config = TrainConfig(
     data=DataConfig(
         # cache_dir="/path/to/cache/dir"  TODO: add this
+        # HI
         vocab_size=256,
         input_seq_len=64,
         num_train_examples=10_000,
