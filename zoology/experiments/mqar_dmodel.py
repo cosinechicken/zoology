@@ -1,6 +1,8 @@
 import uuid
 import numpy as np
 from zoology.config import TrainConfig, ModelConfig, DataConfig, LoggerConfig
+from zoology.data.associative_recall import MQARConfig
+
 
 
 sweep_id = uuid.uuid4().hex[:6]
@@ -26,22 +28,29 @@ for input_seq_len, num_kv_pairs in [
     else:
         batch_size = 512
 
+    train_configs=[MQARConfig(
+      num_examples=100_000, 
+      vocab_size=VOCAB_SIZE, 
+      input_seq_len=input_seq_len, 
+      num_kv_pairs=num_kv_pairs, 
+      power_a = 0.01, 
+      random_non_queries=False)
+    ]
+    test_configs=[MQARConfig(
+      num_examples=3_000, 
+      vocab_size=VOCAB_SIZE, 
+      input_seq_len=input_seq_len, 
+      num_kv_pairs=num_kv_pairs, 
+      power_a = 0.01, 
+      random_non_queries=False)
+    ]
+
     data = DataConfig(
-        num_train_examples=100_000,
-        num_test_examples=3_000,
-        vocab_size=VOCAB_SIZE,
+        train_configs=train_configs,
+        test_configs=test_configs,
         input_seq_len=input_seq_len,
         batch_size=batch_size,
         cache_dir="/var/cr05_data/sabri_data/zg-synthetics",
-        builder={
-            "name": "zoology.data.associative_recall.multiquery_ar",
-            "kwargs": {
-                "num_kv_pairs": num_kv_pairs,
-                "train_power_a": 0.01,
-                "test_power_a": 0.01,
-                "random_non_queries": False
-            }
-        }   
     )
 
     for d_model in [
@@ -163,7 +172,7 @@ for input_seq_len, num_kv_pairs in [
                     run_id=f"{sequence_mixer}-seqlen{input_seq_len}-dmodel{d_model}-lr{lr}-kv{num_kv_pairs}",
                     logger=LoggerConfig(
                         project_name="zoology",
-                        entity="hazy-research"
+                        entity="ah-blenden"
                     )
 
                 )
