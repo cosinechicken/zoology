@@ -26,7 +26,7 @@ for input_seq_len, num_kv_pairs in [
     elif input_seq_len == 256:
         batch_size = 256
     else:
-        batch_size = 512
+        batch_size = 256
 
     train_configs=[MQARConfig(
       num_examples=100_000, 
