@@ -57,9 +57,9 @@ for input_seq_len, num_kv_pairs in [
         # 64, 
         128, 
         256, 
-        512
     ]:
-        for lr in  np.logspace(-4, -2, 4)[2:]:
+        # for lr in  np.logspace(-4, -2, 4)[2:]:
+        for lr in [0.01]:
             
             MIXERS = {
                 "attention": dict(
