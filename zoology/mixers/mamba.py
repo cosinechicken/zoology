@@ -13,7 +13,9 @@ try:
 except:
     assert 0, print(f"Need to install causal_conv1d: pip install causal_conv1d")
 try:
-    from zoology.mixers.mamba_ssm.selective_scan_interface import selective_scan_fn, mamba_inner_fn
+    # from zoology.mixers.mamba_ssm.selective_scan_interface import selective_scan_fn, mamba_inner_fn
+    from zoology.mixers.mamba_ssm.selective_scan_interface_noconv import selective_scan_fn, mamba_inner_fn
+
 except:
     assert 0, print(f"Need to install selective_scan_interface: pip install mamba_ssm")
 

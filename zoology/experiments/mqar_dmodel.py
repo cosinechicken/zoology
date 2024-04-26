@@ -146,8 +146,8 @@ for input_seq_len, num_kv_pairs in [
                 # "base_conv_explicit",
                 # "h3"
                 # "base_conv_explicit"
-                "based",
-                # "mamba"
+                # "based",
+                "mamba"
             ]:
 
                 if 'mamba' in sequence_mixer:

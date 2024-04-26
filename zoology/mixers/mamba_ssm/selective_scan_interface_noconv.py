@@ -188,7 +188,7 @@ class MambaInnerFn(torch.autograd.Function):
             x, conv1d_weight, conv1d_bias, None, None, None, True
         )
         ###
-        conv1d_out = x
+        conv1d_out = x * rearrange(conv1d_weight[:, 0], 'd -> 1 d 1')
         # We're being very careful here about the layout, to avoid extra transposes.
         # We want delta to have d as the slowest moving dimension
         # and L as the fastest moving dimension, since those are what the ssm_scan kernel expects.
@@ -254,7 +254,7 @@ class MambaInnerFn(torch.autograd.Function):
             conv1d_out = causal_conv1d_cuda.causal_conv1d_fwd(
                 x, conv1d_weight, conv1d_bias, None, None, None, True
             )
-            conv1d_out = x
+            conv1d_out = x + rearrange(conv1d_bias, 'd -> 1 d 1')
             delta = rearrange(delta_proj_weight @ x_dbl[:, :delta_rank].t(),
                               "d (b l) -> b d l", l = L)
         # The kernel supports passing in a pre-allocated dz (e.g., in case we want to fuse the
@@ -302,7 +302,10 @@ class MambaInnerFn(torch.autograd.Function):
         dx, dconv1d_weight, dconv1d_bias, *_ = causal_conv1d_cuda.causal_conv1d_bwd(
             x, conv1d_weight, conv1d_bias, dconv1d_out, None, None, None, dx, False, True
         )
-        dx = dconv1d_out
+        dx = dconv1d_out * rearrange(conv1d_weight[:,0], 'd -> 1 d 1')
+        dconv1d_weight = torch.empty_like(dconv1d_weight)
+        dconv1d_weight[:,:] = 0
+        dconv1d_weight[:,0] = torch.einsum("bdl,bdl->d", x, dconv1d_out)
         dxz = torch.cat((dx, dz), dim=1)
         dconv1d_bias = dconv1d_bias if conv1d_bias is not None else None
         dconv1d_weight = rearrange(dconv1d_weight, "d w -> d 1 w")
