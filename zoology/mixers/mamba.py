@@ -13,8 +13,9 @@ try:
 except:
     assert 0, print(f"Need to install causal_conv1d: pip install causal_conv1d")
 try:
-    # from zoology.mixers.mamba_ssm.selective_scan_interface import selective_scan_fn, mamba_inner_fn
-    from zoology.mixers.mamba_ssm.selective_scan_interface_noconv import selective_scan_fn, mamba_inner_fn
+    from zoology.mixers.mamba_ssm.selective_scan_interface import selective_scan_fn, mamba_inner_fn
+    # from zoology.mixers.mamba_ssm.selective_scan_interface_noconv import selective_scan_fn, mamba_inner_fn
+    # print("USING NOCONV")
 
 except:
     assert 0, print(f"Need to install selective_scan_interface: pip install mamba_ssm")
@@ -27,7 +28,7 @@ class Mamba(nn.Module):
         self,
         d_model,
         d_state: int=16,
-        d_conv:int=4,
+        d_conv:int=2,
         expand: int=2,
         dt_rank: str="auto",
         dt_min: float=0.001,

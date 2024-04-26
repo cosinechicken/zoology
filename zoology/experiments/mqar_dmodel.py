@@ -15,9 +15,8 @@ VOCAB_SIZE = 8_192
 configs = []
 for input_seq_len, num_kv_pairs in [
     (64, 4),
-    (128, 8),
-    (256, 16),
-    (512, 64),
+    # (128, 8),
+    # (256, 16),
 ]:
     if input_seq_len == 1024:
         batch_size = 64
@@ -26,7 +25,7 @@ for input_seq_len, num_kv_pairs in [
     elif input_seq_len == 256:
         batch_size = 256
     else:
-        batch_size = 256
+      batch_size = 256
 
     train_configs=[MQARConfig(
       num_examples=100_000, 
@@ -157,7 +156,7 @@ for input_seq_len, num_kv_pairs in [
 
                 model = ModelConfig(
                     d_model=d_model,
-                    n_layers=2,
+                    n_layers=1,
                     block_type=block_type,
                     max_position_embeddings=input_seq_len if sequence_mixer == "attention" else 0,
                     vocab_size=VOCAB_SIZE,
