@@ -41,6 +41,7 @@ for input_seq_len, num_kv_pairs in [
       input_seq_len=input_seq_len, 
       num_kv_pairs=num_kv_pairs, 
       power_a = 0.01, 
+      # use_fake_queries = True,
       random_non_queries=False)
     ]
 
@@ -49,11 +50,11 @@ for input_seq_len, num_kv_pairs in [
         test_configs=test_configs,
         input_seq_len=input_seq_len,
         batch_size=batch_size,
-        cache_dir="/var/cr05_data/sabri_data/zg-synthetics",
+        # cache_dir="/var/cr05_data/sabri_data/zg-synthetics",
     )
 
     for d_model in [
-        64, 
+        32, 
         # 128, 
         # 256, 
     ]:

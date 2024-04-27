@@ -54,7 +54,7 @@ class Trainer:
             total=len(self.train_dataloader),
             desc=f"Train Epoch {epoch_idx}/{self.max_epochs}",
         )
-
+        
         for inputs, targets, slices in iterator:
             inputs, targets = inputs.to(self.device), targets.to(self.device)
             self.optimizer.zero_grad()

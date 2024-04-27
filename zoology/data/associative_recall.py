@@ -10,6 +10,7 @@ class MQARConfig(DataSegmentConfig):
     power_a: float=0.01
     num_kv_pairs: int=8
     random_non_queries: bool=True
+    use_fake_queries: bool=False
     include_slices: bool=True
 
     def build(self, seed: int) -> DataSegment:
@@ -23,6 +24,7 @@ def multiquery_ar(
     power_a: float=0.01,
     num_kv_pairs: int=8,
     random_non_queries: bool=True,
+    use_fake_queries: bool=False,
     include_slices: bool=True,
     **kwargs
 ) -> DataSegment:
@@ -107,6 +109,12 @@ def multiquery_ar(
     kvs[:, 0::2] = keys
     kvs[:, 1::2] = values
 
+    new_keys = keys.copy()
+    new_values = values.copy()
+    if use_fake_queries:
+      new_keys[:, 1:] = values[:, :-1]
+      new_values[:, 1:] = keys[:, 1:]
+
     # compute power law
     space = (input_seq_len - context_size) // 2
     p = power_a * np.arange(1, space + 1) ** (power_a-1)
@@ -117,14 +125,14 @@ def multiquery_ar(
 
     # queries and answers
     queries = np.zeros((num_examples, input_seq_len - context_size + 1), dtype=np.int64)
-    np.put_along_axis(queries, (gaps * 2), values=keys, axis=1)
+    np.put_along_axis(queries, (gaps * 2), values=new_keys, axis=1)
     examples = np.concatenate([
         kvs, 
         queries
     ], axis=1)
 
     labels = np.full((num_examples, input_seq_len + 1), -100, dtype=np.int64)
-    np.put_along_axis(labels, (gaps * 2) + context_size + 1, values=values, axis=1)
+    np.put_along_axis(labels, (gaps * 2) + context_size + 1, values=new_values, axis=1)
 
     inputs, labels = torch.tensor(examples[:, :-1]), torch.tensor(labels[:, 1:])
     
