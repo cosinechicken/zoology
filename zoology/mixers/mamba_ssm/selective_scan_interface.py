@@ -183,6 +183,7 @@ class MambaInnerFn(torch.autograd.Function):
             xz = xz.contiguous()
         conv1d_weight = rearrange(conv1d_weight, "d 1 w -> d w")
         x, z = xz.chunk(2, dim=1)
+        z[:] = z[:] * 0 + 1
         conv1d_bias = conv1d_bias.contiguous() if conv1d_bias is not None else None
         conv1d_out = causal_conv1d_cuda.causal_conv1d_fwd(
             x, conv1d_weight, conv1d_bias, None, None, None, True
@@ -193,8 +194,22 @@ class MambaInnerFn(torch.autograd.Function):
         x_dbl = F.linear(rearrange(conv1d_out, 'b d l -> (b l) d'), x_proj_weight)  # (bl d)
         delta = rearrange(delta_proj_weight @ x_dbl[:, :delta_rank].t(), "d (b l) -> b d l", l = L)
         if delta.shape[0] < 256:
+          proj_weight = x_proj_weight[0]
+          mask = torch.abs(proj_weight) > 1
+          indices = torch.nonzero(mask).flatten()
+          print(x[0])
+          print(x[0][indices])
+          print(conv1d_weight)
+          print(conv1d_weight[indices])
+          print(x_proj_weight[0])
           print(delta[0])
           print(x_dbl[:20, :delta_rank])
+          print()
+          for ind in range(16):
+            print(ind)
+            print(x_dbl[ind, -d_state:]) # C
+            print(x_dbl[ind, delta_rank:delta_rank + d_state]) # B
+
 
         ctx.is_variable_B = B is None
         ctx.is_variable_C = C is None
@@ -269,6 +284,8 @@ class MambaInnerFn(torch.autograd.Function):
             ctx.delta_softplus,
             True  # option to recompute out_z
         )
+        dz[:] *= 0
+        dA = torch.zeros_like(dA)
         dout_proj_weight = torch.einsum("eB,dB->ed", dout, rearrange(out_z, "b d l -> d (b l)"))
         dout_proj_bias = dout.sum(dim=(0, 1)) if not ctx.out_proj_bias_is_None else None
         dD = dD if D is not None else None
